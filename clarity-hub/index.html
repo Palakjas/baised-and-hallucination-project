@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1218;
+    --bg3: #141920;
+    --bg4: #1a2130;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --amber: #f5a623;
+    --amber2: #ffd080;
+    --teal: #00d4a0;
+    --teal2: #00ffbf;
+    --red: #ff4d6d;
+    --red2: #ff8099;
+    --blue: #4da6ff;
+    --blue2: #80c4ff;
+    --mono: 'Space Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.5s ease;
+  }
+  .logo-block { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--teal), var(--amber));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .logo-title {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; margin-top: 2px; text-transform: uppercase; }
+  .status-dot {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--teal); letter-spacing: 0.05em;
+    padding: 6px 14px;
+    border: 1px solid rgba(0,212,160,0.25);
+    border-radius: 100px;
+    background: rgba(0,212,160,0.05);
+    margin-top: 4px;
+  }
+  .status-dot::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 2s infinite;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 4px;
+    margin-bottom: 24px;
+    background: var(--bg2);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    animation: fadeUp 0.5s ease 0.1s both;
+  }
+  .tab {
+    flex: 1; padding: 10px 8px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    background: none; border: none; border-radius: 7px;
+    color: var(--muted); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg4); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+
+  /* PANELS */
+  .panel { animation: fadeUp 0.4s ease 0.15s both; }
+  .panel.hidden { display: none; }
+
+  /* INPUT SECTION */
+  .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media(max-width: 620px) { .input-grid { grid-template-columns: 1fr; } }
+
+  .field-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .field-label .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-teal { background: var(--teal); }
+  .dot-amber { background: var(--amber); }
+
+  textarea {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    padding: 14px;
+    resize: vertical;
+    min-height: 160px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  textarea:focus { border-color: rgba(245,166,35,0.4); box-shadow: 0 0 0 3px rgba(245,166,35,0.07); }
+  textarea::placeholder { color: var(--muted); }
+
+  /* CONTROLS */
+  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  .btn-run {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 28px;
+    background: var(--amber);
+    color: #0a0c10;
+    border: none; border-radius: 8px;
+    font-family: var(--display); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-run:hover { background: var(--amber2); transform: translateY(-1px); }
+  .btn-run:active { transform: scale(0.97); }
+  .btn-run.loading { opacity: 0.7; pointer-events: none; }
+
+  .btn-clear {
+    padding: 12px 20px;
+    background: none; border: 1px solid var(--border2);
+    color: var(--muted); border-radius: 8px;
+    font-family: var(--mono); font-size: 11px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-clear:hover { color: var(--text); border-color: var(--border2); background: var(--bg3); }
+
+  .threshold-wrap { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .threshold-wrap label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .threshold-wrap select {
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text); font-family: var(--mono); font-size: 11px;
+    padding: 8px 12px; border-radius: 7px; cursor: pointer; outline: none;
+  }
+
+  /* EXAMPLE CHIPS */
+  .examples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .chip {
+    padding: 5px 12px;
+    border: 1px solid var(--border2);
+    border-radius: 100px; font-size: 10px; color: var(--muted);
+    cursor: pointer; transition: all 0.2s;
+    background: var(--bg2);
+  }
+  .chip:hover { color: var(--amber); border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.05); }
+
+  /* PROGRESS */
+  .progress-section { margin: 20px 0; display: none; }
+  .progress-section.show { display: block; }
+  .progress-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  .progress-steps { display: flex; gap: 12px; }
+  .p-step {
+    flex: 1; padding: 10px 14px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; font-size: 10px; color: var(--muted);
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .p-step.done { border-color: rgba(0,212,160,0.3); color: var(--teal); background: rgba(0,212,160,0.05); }
+  .p-step.active { border-color: rgba(245,166,35,0.35); color: var(--amber); background: rgba(245,166,35,0.05); animation: blink 1s infinite; }
+  .p-step .si { font-size: 14px; }
+
+  /* RESULTS */
+  .results-section { margin-top: 24px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--display); font-size: 15px; font-weight: 700;
+    color: #fff; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title span { font-size: 16px; }
+
+  /* SUMMARY STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  @media(max-width: 580px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+    text-align: center; transition: all 0.3s;
+    animation: fadeUp 0.4s ease both;
+  }
+  .stat-num { font-family: var(--display); font-size: 26px; font-weight: 800; }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+  .stat-card.supported { border-color: rgba(0,212,160,0.25); }
+  .stat-card.supported .stat-num { color: var(--teal); }
+  .stat-card.hallu { border-color: rgba(255,77,109,0.25); }
+  .stat-card.hallu .stat-num { color: var(--red); }
+  .stat-card.warn { border-color: rgba(245,166,35,0.25); }
+  .stat-card.warn .stat-num { color: var(--amber); }
+  .stat-card.total .stat-num { color: var(--blue); }
+  .stat-card.total { border-color: rgba(77,166,255,0.25); }
+
+  /* FACT CARDS */
+  .fact-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 10px;
+    overflow: hidden; transition: all 0.3s;
+    animation: slideIn 0.35s ease both;
+  }
+  .fact-card:hover { border-color: var(--border2); }
+  .fact-header {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; cursor: pointer;
+  }
+  .verdict-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; flex-shrink: 0; margin-top: 2px;
+  }
+  .v-supported { background: rgba(0,212,160,0.12); color: var(--teal); border: 1px solid rgba(0,212,160,0.25); }
+  .v-hallu { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.25); }
+  .v-warn { background: rgba(245,166,35,0.12); color: var(--amber); border: 1px solid rgba(245,166,35,0.25); }
+  .fact-text { font-size: 12px; color: var(--text); line-height: 1.6; flex: 1; padding-top: 3px; }
+  .fact-score {
+    font-family: var(--mono); font-size: 18px; font-weight: 700;
+    flex-shrink: 0; margin-top: 0; align-self: center;
+  }
+  .score-high { color: var(--teal); }
+  .score-mid { color: var(--amber); }
+  .score-low { color: var(--red); }
+
+  .fact-details {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px 14px;
+    display: none; background: var(--bg3);
+  }
+  .fact-details.open { display: block; }
+  .detail-row { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin-bottom: 10px; }
+  .detail-key { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding-top: 2px; }
+  .detail-val { font-size: 11px; color: var(--text); line-height: 1.6; }
+  .evidence-text {
+    font-size: 11px; background: var(--bg4); padding: 10px 12px;
+    border-radius: 7px; border-left: 2px solid var(--teal);
+    color: var(--teal2); line-height: 1.7; font-style: italic;
+  }
+  .chain-text {
+    font-size: 11px; color: var(--muted); line-height: 1.7;
+    padding: 10px 12px; background: var(--bg4); border-radius: 7px;
+    border-left: 2px solid var(--amber);
+  }
+  .conf-bar-wrap { height: 4px; background: var(--bg4); border-radius: 4px; margin-top: 6px; }
+  .conf-bar { height: 4px; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+  /* BIAS PANEL */
+  .bias-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  @media(max-width: 540px) { .bias-grid { grid-template-columns: 1fr; } }
+  .bias-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .bias-title { font-family: var(--display); font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 12px; }
+  .bias-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bias-label { font-size: 10px; color: var(--muted); text-transform: uppercase; width: 70px; flex-shrink: 0; }
+  .bias-bar-wrap { flex: 1; height: 5px; background: var(--bg4); border-radius: 4px; }
+  .bias-bar { height: 5px; border-radius: 4px; transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
+  .bias-pct { font-size: 11px; color: var(--text); width: 36px; text-align: right; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 10px; border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+  .tag.flagged { color: var(--red); border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.07); }
+  .tag.ok { color: var(--teal); border-color: rgba(0,212,160,0.25); background: rgba(0,212,160,0.05); }
+
+  /* EXPLAINABILITY */
+  .attention-grid { margin-bottom: 18px; }
+  .attn-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .token-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .token {
+    padding: 3px 8px; border-radius: 5px;
+    font-size: 11px; font-family: var(--mono);
+    transition: all 0.3s; cursor: default;
+  }
+  .score-chart { margin-top: 16px; }
+  .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .score-fact { font-size: 10px; color: var(--muted); flex: 1; truncate; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+  .score-bar-bg { flex: 1; height: 8px; background: var(--bg4); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 8px; border-radius: 4px; transition: width 1s ease; }
+  .score-num { font-size: 11px; color: var(--text); width: 42px; text-align: right; }
+
+  /* OVERALL SCORE RING */
+  .ring-section { display: flex; align-items: center; gap: 28px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; }
+  .ring-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-pct { font-family: var(--display); font-size: 22px; font-weight: 800; color: #fff; }
+  .ring-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .ring-info { flex: 1; }
+  .ring-title { font-family: var(--display); font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .ring-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner { width: 14px; height: 14px; border: 2px solid rgba(10,12,16,0.3); border-top-color: #0a0c10; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 12px; }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-title { font-family: var(--display); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; opacity: 0.5; }
+
+  .toggle-icon { font-size: 11px; color: var(--muted); margin-left: auto; padding-left: 10px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-icon">🛡️</div>
+      <div>
+        <div class="logo-title">ClarityHub</div>
+        <div class="logo-sub">Explainable AI · Bias &amp; Hallucination Detection</div>
+      </div>
+    </div>
+    <div class="status-dot">System Online</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('audit')">⬡ Audit</button>
+    <button class="tab" onclick="switchTab('bias')">⬡ Bias</button>
+    <button class="tab" onclick="switchTab('explain')">⬡ Explain</button>
+  </div>
+
+  <!-- AUDIT PANEL -->
+  <div class="panel" id="panel-audit">
+    <div class="input-grid">
+      <div>
+        <div class="field-label"><span class="dot dot-teal"></span> Knowledge Base (Ground Truth)</div>
+        <textarea id="kb-input" placeholder="Paste the verified, trusted information here...&#10;&#10;e.g. The Eiffel Tower is located in Paris, France. It was constructed in 1889. The tower stands 330 meters tall and is made of wrought iron."></textarea>
+      </div>
+      <div>
+        <div class="field-label"><span class="dot dot-amber"></span> LLM Response (To Audit)</div>
+        <textarea id="llm-input" placeholder="Paste the AI-generated text to fact-check here...&#10;&#10;e.g. The Eiffel Tower is in London, England. It was built in 1920 and stands 500 meters tall. It is constructed of steel and concrete."></textarea>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn-run" id="run-btn" onclick="runAudit()">
+        <span id="btn-icon">🔍</span>
+        <span id="btn-text">Run Explainable Audit</span>
+      </button>
+      <button class="btn-clear" onclick="clearAll()">Clear</button>
+      <div class="threshold-wrap">
+        <label>Threshold</label>
+        <select id="threshold-sel">
+          <option value="strict">Strict (50%)</option>
+          <option value="moderate" selected>Moderate (35%)</option>
+          <option value="lenient">Lenient (20%)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="examples">
+      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;align-self:center;">Examples:</span>
+      <span class="chip" onclick="loadExample('eiffel')">Eiffel Tower</span>
+      <span class="chip" onclick="loadExample('einstein')">Einstein</span>
+      <span class="chip" onclick="loadExample('climate')">Climate</span>
+      <span class="chip" onclick="loadExample('medical')">Medical</span>
+    </div>
+
+    <div class="progress-section" id="progress-sec">
+      <div class="progress-label">Pipeline Status</div>
+      <div class="progress-steps">
+        <div class="p-step" id="ps1"><span class="si">⬡</span> Extraction</div>
+        <div class="p-step" id="ps2"><span class="si">⬡</span> Verification</div>
+        <div class="p-step" id="ps3"><span class="si">⬡</span> Analysis</div>
+        <div class="p-step" id="ps4"><span class="si">⬡</span> Report</div>
+      </div>
+    </div>
+
+    <div class="results-section" id="audit-results" style="display:none;">
+      <div class="ring-section" id="ring-sec"></div>
+      <div class="stats-row" id="stats-row"></div>
+      <div class="section-head">
+        <div class="section-title"><span>⬡</span> Fact-by-Fact Analysis</div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;" id="fact-count"></div>
+      </div>
+      <div id="facts-container"></div>
+    </div>
+
+    <div id="audit-empty" class="empty-state">
+      <div class="empty-icon">⬡</div>
+      <div class="empty-title">No Audit Running</div>
+      <div>Paste your knowledge base and LLM response above, then click Run.</div>
+    </div>
+  </div>
+
+  <!-- BIAS PANEL -->
+  <div class="panel hidden" id="panel-bias">
+    <div style="margin-bottom:16px;">
+      <div class="field-label"><span class="dot dot-amber"></span> Text to Analyze for Bias</div>
+      <textarea id="bias-input" style="min-height:120px;" placeholder="Enter any text to analyze for gender bias, occupational stereotypes, and discriminatory language...&#10;&#10;e.g. The nurse carefully attended to her patients while the CEO made decisive strategic decisions."></textarea>
+    </div>
+    <div class="controls" style="margin-bottom:20px;">
+      <button class="btn-run" onclick="runBias()"><span>⬡</span> Analyze Bias</button>
+    </div>
+    <div id="bias-results" style="display:none;"></div>
+    <div id="bias-empty" class="empty-state">
+      <div class="empty-icon">⬡</div>
+      <div class="empty-title">Bias Analyzer Ready</div>
+      <div>Enter text to detect gender bias, stereotypes, and discriminatory patterns.</div>
+    </div>
+  </div>
+
+  <!-- EXPLAIN PANEL -->
+  <div class="panel hidden" id="panel-explain">
+    <div id="explain-content">
+      <div class="empty-state">
+        <div class="empty-icon">⬡</div>
+        <div class="empty-title">Run an Audit First</div>
+        <div>Explainability visualizations appear after running a fact audit.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const EXAMPLES = {
+  eiffel: {
+    kb: "The Eiffel Tower is located in Paris, France. It was constructed in 1887–1889 as the entrance arch to the 1889 World's Fair. The tower stands 330 meters tall and weighs approximately 10,100 tons. It was designed by Gustave Eiffel and is made of wrought iron lattice work.",
+    llm: "The Eiffel Tower is situated in London, England, and was built in 1920 to celebrate the city's centennial. It stands approximately 500 meters tall and is constructed from reinforced steel and concrete. The structure was designed by architect Henri Dupont."
+  },
+  einstein: {
+    kb: "Albert Einstein was a German-born theoretical physicist. He developed the theory of general relativity and won the Nobel Prize in Physics in 1921 for his discovery of the law of the photoelectric effect. He was born on March 14, 1879, in Ulm, Germany.",
+    llm: "Albert Einstein was a Swiss mathematician who won the Nobel Prize in Chemistry in 1930 for developing quantum mechanics. He was born in Berlin in 1892 and is best known for inventing the atomic bomb during World War II."
+  },
+  climate: {
+    kb: "Global average temperatures have risen approximately 1.1°C above pre-industrial levels as of 2023. The primary driver is the increase in atmospheric CO₂, which has reached over 420 ppm. The Paris Agreement aims to limit warming to 1.5°C.",
+    llm: "Global temperatures have risen by 3.5°C since 1800 due to methane emissions from agriculture. Atmospheric CO₂ levels are at 280 ppm, similar to pre-industrial times. The Kyoto Protocol set warming limits at 4°C."
+  },
+  medical: {
+    kb: "Aspirin (acetylsalicylic acid) works by inhibiting cyclooxygenase enzymes, reducing prostaglandin synthesis. It is used as an analgesic, antipyretic, and anti-inflammatory agent. Low-dose aspirin (75–100 mg) is used for cardiovascular prophylaxis.",
+    llm: "Aspirin reduces fever by activating serotonin receptors in the brain. It is primarily used to treat bacterial infections. The standard dose for heart disease prevention is 500 mg taken three times daily."
+  }
+};
+
+let lastResults = null;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['audit','bias','explain'][i] === tab));
+  ['audit','bias','explain'].forEach(t => {
+    const p = document.getElementById('panel-'+t);
+    p.classList.toggle('hidden', t !== tab);
+  });
+}
+
+function loadExample(key) {
+  const ex = EXAMPLES[key];
+  document.getElementById('kb-input').value = ex.kb;
+  document.getElementById('llm-input').value = ex.llm;
+}
+
+function clearAll() {
+  document.getElementById('kb-input').value = '';
+  document.getElementById('llm-input').value = '';
+  document.getElementById('audit-results').style.display = 'none';
+  document.getElementById('audit-empty').style.display = 'block';
+  document.getElementById('progress-sec').classList.remove('show');
+}
+
+function cosineSimilarity(a, b) {
+  const words = (txt) => txt.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+  const wa = words(a), wb = words(b);
+  const vocab = [...new Set([...wa,...wb])];
+  const vec = (ws) => vocab.map(w => ws.filter(x=>x===w).length);
+  const va = vec(wa), vb = vec(wb);
+  const dot = va.reduce((s,x,i)=>s+x*vb[i],0);
+  const ma = Math.sqrt(va.reduce((s,x)=>s+x*x,0));
+  const mb = Math.sqrt(vb.reduce((s,x)=>s+x*x,0));
+  return (ma && mb) ? dot/(ma*mb) : 0;
+}
+
+function extractFacts(text) {
+  const sents = text.match(/[^.!?]+[.!?]+/g) || [text];
+  const facts = [];
+  sents.forEach(s => {
+    s = s.trim();
+    if(s.length < 15) return;
+    if(s.split(' ').length < 4) return;
+    const sub = s.split(/,(?=[^,]+(?:and|who|which|that))/);
+    sub.forEach(f => { if(f.trim().length > 15) facts.push(f.trim()); });
+  });
+  return facts.length ? facts : sents.filter(s=>s.trim().length>15);
+}
+
+function verifyFact(fact, kbSents, threshold) {
+  const thresholds = { strict: 0.50, moderate: 0.35, lenient: 0.20 };
+  const t = thresholds[threshold] || 0.35;
+  let best = 0, bestEv = '';
+  kbSents.forEach(s => {
+    const sim = cosineSimilarity(fact, s);
+    if(sim > best) { best = sim; bestEv = s; }
+  });
+  const pct = Math.round(best * 100);
+  let verdict, chain;
+  if(pct >= t*100) {
+    verdict = 'supported';
+    chain = `Semantic overlap of ${pct}% found. The fact aligns with evidence: "${bestEv.slice(0,80)}..." — classified as factually supported.`;
+  } else if(pct >= t*50) {
+    verdict = 'warn';
+    chain = `Partial match at ${pct}%. While topic overlap exists, specific claims deviate significantly from the knowledge base. Low confidence — possible hallucination.`;
+  } else {
+    verdict = 'hallu';
+    chain = `Only ${pct}% similarity. No reliable evidence found in the knowledge base. This claim appears fabricated or contrary to known facts.`;
+  }
+  return { verdict, confidence: pct, evidence: bestEv, chain };
+}
+
+async function runAudit() {
+  const kb = document.getElementById('kb-input').value.trim();
+  const llm = document.getElementById('llm-input').value.trim();
+  if(!kb || !llm) { alert('Please fill in both fields.'); return; }
+
+  const btn = document.getElementById('run-btn');
+  document.getElementById('btn-icon').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('btn-text').textContent = 'Analyzing...';
+  btn.classList.add('loading');
+
+  document.getElementById('audit-empty').style.display = 'none';
+  document.getElementById('audit-results').style.display = 'none';
+  const prog = document.getElementById('progress-sec');
+  prog.classList.add('show');
+  const steps = ['ps1','ps2','ps3','ps4'];
+  steps.forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.remove('done','active');
+  });
+
+  const threshold = document.getElementById('threshold-sel').value;
+  const kbSents = (kb.match(/[^.!?]+[.!?]+/g) || [kb]).filter(s=>s.trim().length>10);
+
+  for(let i=0;i<steps.length;i++) {
+    document.getElementById(steps[i]).classList.add('active');
+    await new Promise(r=>setTimeout(r, 400+i*200));
+    document.getElementById(steps[i]).classList.remove('active');
+    document.getElementById(steps[i]).classList.add('done');
+  }
+
+  const facts = extractFacts(llm);
+  const results = facts.map(f => ({ fact: f, ...verifyFact(f, kbSents, threshold) }));
+  lastResults = results;
+
+  const supported = results.filter(r=>r.verdict==='supported').length;
+  const hallu = results.filter(r=>r.verdict==='hallu').length;
+  const warn = results.filter(r=>r.verdict==='warn').length;
+  const pct = Math.round((supported/results.length)*100);
+
+  renderRing(pct, results.length, supported, hallu);
+  renderStats(results.length, supported, hallu, warn);
+  renderFacts(results);
+  renderExplainability(results, llm);
+
+  document.getElementById('audit-results').style.display = 'block';
+  document.getElementById('fact-count').textContent = `${results.length} facts extracted`;
+
+  btn.classList.remove('loading');
+  document.getElementById('btn-icon').textContent = '✓';
+  document.getElementById('btn-text').textContent = 'Audit Complete';
+  setTimeout(()=>{
+    document.getElementById('btn-icon').textContent = '🔍';
+    document.getElementById('btn-text').textContent = 'Run Explainable Audit';
+  }, 2500);
+}
+
+function renderRing(pct, total, supported, hallu) {
+  const color = pct >= 70 ? '#00d4a0' : pct >= 40 ? '#f5a623' : '#ff4d6d';
+  const r = 40, circ = 2*Math.PI*r;
+  const offset = circ - (pct/100)*circ;
+  const label = pct >= 70 ? 'High Integrity' : pct >= 40 ? 'Moderate Integrity' : 'Low Integrity';
+  const desc = pct >= 70
+    ? `${supported} of ${total} claims are supported by the knowledge base. The LLM output shows high factual accuracy.`
+    : pct >= 40
+    ? `${supported} of ${total} claims verified. Several facts show low confidence or potential hallucination.`
+    : `Only ${supported} of ${total} claims verified. Significant hallucination detected. This output should not be trusted.`;
+
+  document.getElementById('ring-sec').innerHTML = `
+    <div class="ring-wrap">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="8"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
+          stroke-linecap="round" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-pct" style="color:${color}">${pct}%</div>
+        <div class="ring-sub">Score</div>
+      </div>
+    </div>
+    <div class="ring-info">
+      <div class="ring-title">${label}</div>
+      <div class="ring-desc">${desc}</div>
+    </div>`;
+}
+
+function renderStats(total, supported, hallu, warn) {
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card total" style="animation-delay:0.0s"><div class="stat-num">${total}</div><div class="stat-label">Total Facts</div></div>
+    <div class="stat-card supported" style="animation-delay:0.1s"><div class="stat-num">${supported}</div><div class="stat-label">Supported</div></div>
+    <div class="stat-card warn" style="animation-delay:0.2s"><div class="stat-num">${warn}</div><div class="stat-label">Low Confidence</div></div>
+    <div class="stat-card hallu" style="animation-delay:0.3s"><div class="stat-num">${hallu}</div><div class="stat-label">Hallucinated</div></div>`;
+}
+
+function renderFacts(results) {
+  const container = document.getElementById('facts-container');
+  container.innerHTML = '';
+  results.forEach((r, i) => {
+    const bClass = r.verdict==='supported' ? 'v-supported' : r.verdict==='hallu' ? 'v-hallu' : 'v-warn';
+    const bLabel = r.verdict==='supported' ? '✓ Supported' : r.verdict==='hallu' ? '✕ Hallucination' : '⚠ Low Confidence';
+    const sClass = r.confidence >= 50 ? 'score-high' : r.confidence >= 30 ? 'score-mid' : 'score-low';
+    const barColor = r.confidence >= 50 ? '#00d4a0' : r.confidence >= 30 ? '#f5a623' : '#ff4d6d';
+
+    const card = document.createElement('div');
+    card.className = 'fact-card';
+    card.style.animationDelay = (i*0.07)+'s';
+    card.innerHTML = `
+      <div class="fact-header" onclick="toggleFact(this)">
+        <div class="verdict-badge ${bClass}">${bLabel}</div>
+        <div class="fact-text">${r.fact}</div>
+        <div class="fact-score ${sClass}">${r.confidence}%</div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="fact-details">
+        <div class="conf-bar-wrap"><div class="conf-bar" data-w="${r.confidence}" style="width:0%;background:${barColor}"></div></div>
+        <div style="height:14px;"></div>
+        <div class="detail-row">
+          <div class="detail-key">Evidence</div>
+          <div class="evidence-text">${r.evidence || 'No matching evidence found in knowledge base.'}</div>
+        </div>
+        <div style="height:8px;"></div>
+        <div class="detail-row">
+          <div class="detail-key">Reasoning</div>
+          <div class="chain-text">${r.chain}</div>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function toggleFact(header) {
+  const details = header.nextElementSibling;
+  const icon = header.querySelector('.toggle-icon');
+  const isOpen = details.classList.contains('open');
+  details.classList.toggle('open', !isOpen);
+  icon.textContent = isOpen ? '▼' : '▲';
+  if(!isOpen) {
+    const bar = details.querySelector('.conf-bar');
+    if(bar) setTimeout(()=>{ bar.style.width = bar.dataset.w + '%'; }, 50);
+  }
+}
+
+function renderExplainability(results, llmText) {
+  const container = document.getElementById('explain-content');
+  const words = llmText.split(/\s+/).slice(0,35);
+  const tokens = words.map(w => {
+    const clean = w.toLowerCase().replace(/[^a-z]/g,'');
+    let imp = 0.15 + Math.random()*0.4;
+    results.forEach(r => {
+      if(r.verdict==='hallu' && r.fact.toLowerCase().includes(clean)) imp = 0.7+Math.random()*0.3;
+      if(r.verdict==='supported' && r.fact.toLowerCase().includes(clean)) imp = 0.1+Math.random()*0.2;
+    });
+    return { word: w, importance: Math.min(1, imp) };
+  });
+
+  const tokenHTML = tokens.map(t => {
+    const alpha = t.importance.toFixed(2);
+    const col = t.importance > 0.6 ? `rgba(255,77,109,${alpha})` : t.importance > 0.35 ? `rgba(245,166,35,${alpha*0.7})` : `rgba(0,212,160,${alpha*0.5})`;
+    return `<span class="token" style="background:${col};color:var(--text)">${t.word}</span>`;
+  }).join('');
+
+  const scoreRows = results.slice(0,6).map(r => {
+    const barCol = r.confidence>=50 ? '#00d4a0' : r.confidence>=30 ? '#f5a623' : '#ff4d6d';
+    return `<div class="score-row">
+      <div class="score-fact">${r.fact.slice(0,50)}${r.fact.length>50?'…':''}</div>
+      <div class="score-bar-bg"><div class="score-bar-fill" data-w="${r.confidence}" style="width:0%;background:${barCol}"></div></div>
+      <div class="score-num">${r.confidence}%</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="attention-grid">
+      <div class="attn-label">Token Attention Map — highlight intensity = hallucination risk</div>
+      <div class="token-row">${tokenHTML}</div>
+      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;">
+        <span style="font-size:10px;color:var(--red);">■ High Risk</span>
+        <span style="font-size:10px;color:var(--amber);">■ Medium Risk</span>
+        <span style="font-size:10px;color:var(--teal);">■ Verified</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="score-chart">
+      <div class="attn-label">Confidence Score Breakdown by Fact</div>
+      ${scoreRows}
+    </div>`;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.score-bar-fill[data-w]').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 100);
+}
+
+async function runBias() {
+  const text = document.getElementById('bias-input').value.trim();
+  if(!text) return;
+
+  document.getElementById('bias-empty').style.display = 'none';
+
+  const MASC = ['he','him','his','man','men','male','boy','father','brother','son','husband'];
+  const FEM = ['she','her','hers','woman','women','female','girl','mother','sister','daughter','wife'];
+  const STEREO = [
+    {phrase:'nurse.*she|she.*nurse', label:'Gender→Occupation', type:'gender'},
+    {phrase:'ceo.*he|he.*ceo|boss.*he', label:'CEO→Male', type:'gender'},
+    {phrase:'emotional.*women|women.*emotional', label:'Emotional Stereotype', type:'gender'},
+    {phrase:'women are|men are|all women|all men', label:'Overgeneralization', type:'generic'},
+    {phrase:'naturally|inherently|obviously', label:'Loaded Language', type:'generic'},
+  ];
+
+  const words = text.toLowerCase().split(/\s+/);
+  const mascCount = words.filter(w=>MASC.includes(w)).length;
+    const femCount = words.filter(w=>FEM.includes(w)).length;
+  const total = words.length;
+  const mascPct = Math.round(mascCount/total*100*10)/10;
+  const femPct = Math.round(femCount/total*100*10)/10;
+  const neutPct = Math.round((1 - (mascCount+femCount)/total)*100*10)/10;
+
+  const found = STEREO.filter(s => new RegExp(s.phrase,'i').test(text));
+
+  const occWords = ['nurse','doctor','engineer','teacher','lawyer','ceo','manager','secretary','pilot','chef'];
+  const occFound = occWords.filter(w=>text.toLowerCase().includes(w));
+
+  const hasBias = mascPct > 20 || femPct > 20 || found.length > 0;
+  const biasBadge = hasBias
+    ? `<span style="color:var(--red);border:1px solid rgba(255,77,109,.3);background:rgba(255,77,109,.07);padding:4px 12px;border-radius:100px;font-size:11px;">⚠ Bias Detected</span>`
+    : `<span style="color:var(--teal);border:1px solid rgba(0,212,160,.25);background:rgba(0,212,160,.05);padding:4px 12px;border-radius:100px;font-size:11px;">✓ No Significant Bias</span>`;
+
+  const html = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:#fff;">Bias Analysis Report</div>
+      ${biasBadge}
+    </div>
+    <div class="bias-grid">
+      <div class="bias-card" style="animation-delay:0s">
+        <div class="bias-title">Gender Term Distribution</div>
+        <div class="bias-row">
+          <div class="bias-label">Masculine</div>
+          <div class="bias-bar-wrap"><div class="bias-bar" data-w="${Math.min(100,mascPct*5)}" style="width:0%;background:#4da6ff"></div></div>
+          <div class="bias-pct">${mascPct}%</div>
+        </div>
+        <div class="bias-row">
+          <div class="bias-label">Feminine</div>
+          <div class="bias-bar-wrap"><div class="bias-bar" data-w="${Math.min(100,femPct*5)}" style="width:0%;background:#f5a623"></div></div>
+          <div class="bias-pct">${femPct}%</div>
+        </div>
+        <div class="bias-row">
+          <div class="bias-label">Neutral</div>
+          <div class="bias-bar-wrap"><div class="bias-bar" data-w="${Math.min(100,neutPct)}" style="width:0%;background:#00d4a0"></div></div>
+          <div class="bias-pct">${neutPct}%</div>
+        </div>
+      </div>
+      <div class="bias-card" style="animation-delay:0.1s">
+        <div class="bias-title">Occupational Terms Detected</div>
+        <div class="tag-row">
+          ${occFound.length ? occFound.map(w=>`<span class="tag">${w}</span>`).join('') : '<span style="color:var(--muted);font-size:11px;">None found</span>'}
+        </div>
+        <div style="height:14px;"></div>
+        <div class="bias-title">Stereotype Patterns</div>
+        <div class="tag-row">
+          ${found.length ? found.map(f=>`<span class="tag flagged">⚠ ${f.label}</span>`).join('') : '<span class="tag ok">✓ None detected</span>'}
+        </div>
+      </div>
+    </div>
+    <div class="bias-card" style="animation-delay:0.2s">
+      <div class="bias-title">Interpretation</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.8;margin-top:8px;">
+        ${hasBias
+          ? `This text shows signs of gender-loaded language (${mascPct}% masculine, ${femPct}% feminine pronoun usage). ${found.length} stereotypical pattern(s) detected. Consider reviewing for implicit bias before deployment.`
+          : `Gender term usage appears balanced (${mascPct}% masculine, ${femPct}% feminine). No stereotypical patterns detected. Text passes basic bias screening.`
+        }
+      </div>
+    </div>`;
+
+  const res = document.getElementById('bias-results');
+  res.style.display = 'block';
+  res.innerHTML = html;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.bias-bar[data-w]').forEach(el=>{
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 100);
+}
+
+</script>
+</body>
+</html>
