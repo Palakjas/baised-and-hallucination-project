@@ -79,12 +79,9 @@ ClarityHub is a **3-module Explainable AI (XAI) system** that:
 
 ---
 
-## 🏗️ System Architecture
-
-```
                     ┌──────────────────┐
                     │   User Interface │
-                    │  (Streamlit UI)  │
+                    │ (ClarityHub Web) │
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
@@ -161,37 +158,19 @@ ClarityHub is a **3-module Explainable AI (XAI) system** that:
 
 ```
 NLP-project/
-│
-├── 🎨 Frontend & UI
-│   ├── app.py                    # Streamlit interactive dashboard
-│   └── clarity-hub/              # React frontend (Vite + Tailwind)
-│
-├── 🔧 Backend API
-│   └── api.py                    # Flask REST API (5 endpoints)
-│
-├── 🧠 Core NLP Modules
-│   └── src/
-│       ├── __init__.py
-│       ├── fact_extraction.py    # Atomic fact extractor (LLM + rule-based)
-│       ├── verification.py       # Semantic similarity verifier
-│       └── data_preparation.py   # Text cleaning & preprocessing
-│
-├── 📊 ML & Analysis
-│   ├── implementation.py         # Bias, Hallucination & Explainability modules
-│   ├── dataset_loader.py         # Unified dataset loader (10+ datasets)
-│   └── setup_datasets.py        # Automated dataset download script
-│
-├── 📚 Documentation
-│   ├── README.md                 # ← You are here
-│   ├── Quick_Start_Guide.md      # Installation & setup guide
-│   └── LLM_Bais_Hallucination_Detection_Data_Guide.md  # Dataset reference
-│
-├── ⚙️ Configuration
-│   ├── requirements.txt          # Python dependencies
-│   └── .env.example              # Environment variable template
-│
-└── 📦 Environment
-    └── .venv/                    # Virtual environment
+```text
+.
+├── clarity-hub/            # NEW: Premium Standalone Dashboard
+│   └── index.html          # High-fidelity dashboard UI
+├── src/                    # Core Logic Modules
+│   ├── fact_extraction.py  # Atomic fact breakdown
+│   └── verification.py     # Semantic similarity logic
+├── api.py                  # Flask REST API
+├── app.py                  # Streamlit Interface
+├── implementation.py       # Core XAI Class implementations
+├── dataset_loader.py       # Dataset management
+├── requirements.txt        # Dependencies
+└── setup_datasets.py       # Auto-download script
 ```
 
 ---
@@ -244,12 +223,22 @@ python setup_datasets.py
 
 ### Step 6: Run the Application
 
+### 1. ClarityHub Web Dashboard (Recommended)
+The premium, high-fidelity UI is served as a standalone dashboard.
+
+*   Navigate to `clarity-hub/` and open `index.html` in your browser.
+*   Alternatively, serve it via the local server:
+    ```bash
+    python -m http.server 8000
+    ```
+    Then visit: [http://localhost:8000/clarity-hub/index.html](http://localhost:8000/clarity-hub/index.html)
+
+### 2. Streamlit Dashboard
+For a more data-centric view of the Python pipeline:
 ```bash
-# Launch the Streamlit UI
 streamlit run app.py
 ```
-
-Open **http://localhost:8501** in your browser.
+Visit: [http://localhost:8501](http://localhost:8501)
 
 ---
 
