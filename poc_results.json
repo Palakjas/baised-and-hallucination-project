@@ -1,0 +1,19 @@
+{
+    "facts": [
+        {
+            "fact": "The Taj Mahal is in Delhi and was built by Akbar in 1650",
+            "verification": {
+                "is_supported": true,
+                "confidence": 0.7534518241882324,
+                "evidence": "The Taj Mahal is in Agra, India.",
+                "similarity_score": 0.7534518241882324
+            }
+        }
+    ],
+    "summary": {
+        "total_facts": 1,
+        "supported": 1,
+        "not_supported": 0,
+        "support_rate": 1.0
+    }
+}

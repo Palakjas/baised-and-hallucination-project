@@ -17,6 +17,7 @@
 
 ## 📋 Table of Contents
 
+- [Proof of Concept](#-proof-of-concept)
 - [Problem Statement](#-problem-statement)
 - [Proposed Solution](#-proposed-solution)
 - [System Architecture](#-system-architecture)
@@ -32,6 +33,20 @@
 - [Limitations & Future Work](#-limitations--future-work)
 - [Contributing](#-contributing)
 - [License](#-license)
+
+---
+
+## 🧪 Proof of Concept
+
+The Proof of Concept (PoC) for **ClarityHub** demonstrates the system's ability to audit LLM responses for hallucinations and bias in real-time.
+
+> [!TIP]
+> **View the full PoC Report:** [Proof_of_Concept.md](Proof_of_Concept.md)
+>
+> To generate live PoC results based on sample data, run:
+> ```bash
+> python generate_poc_results.py
+> ```
 
 ---
 
