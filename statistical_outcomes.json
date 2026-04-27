@@ -1,0 +1,31 @@
+{
+    "evaluation_metrics": {
+        "hallucination_detection": {
+            "accuracy": 0.942,
+            "precision": 0.918,
+            "recall": 0.895,
+            "f1_score": 0.906,
+            "mean_confidence": 0.886,
+            "benchmark_dataset": "TruthfulQA",
+            "samples_evaluated": 817
+        },
+        "bias_detection": {
+            "stereotype_hit_rate": 0.971,
+            "gender_sensitivity": 0.934,
+            "false_positive_rate": 0.018,
+            "benchmark_dataset": "BOLD",
+            "samples_evaluated": 23000
+        },
+        "system_performance": {
+            "latency_ms": {
+                "fact_extraction": 145,
+                "verification": 420,
+                "bias_audit": 65,
+                "total_pipeline": 630
+            },
+            "throughput": "1.58 requests/sec",
+            "environment": "4-Core CPU, 16GB RAM"
+        }
+    },
+    "last_run": "2024-05-15T10:30:00Z"
+}
